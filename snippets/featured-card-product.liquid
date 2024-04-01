@@ -1,0 +1,19 @@
+<div id="product-{{ card_product.id }}" class="featured-product-card">
+    <a href = "{{ card_product.url }}" target="_blank">
+      {{ card_product.featured_image | image_url: width: master | image_tag }}
+      <h3 class="product-title">{{ card_product.title }}</h3>
+      <div class="price">
+        {% if card_product.price_min < card_product.price_max %}
+          <p class="from-price">from {{ card_product.price_min | money }}</p>
+          <p class="to-price">to {{ card_product.price_max | money }}</p>
+        {% else %}
+          <p>{{ card_product.price | money }}</p>
+        {% endif %}
+      </div>
+    </a>
+    {% if quick_add_value %}
+      <button class="add-to-cart-btn" data-product-id="{{ card_product.variants[0].id }}" data-quantity="1">Add to Cart</button>
+    {% else %}
+      <a class="shop-now-link" href="{{ card_product.url }}" target="_blank">Shop now</a>
+    {% endif %}
+</div>
