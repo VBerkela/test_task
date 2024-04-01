@@ -1,0 +1,170 @@
+{{ 'featured-products.css' | asset_url | stylesheet_tag }}
+{% style %}
+  .featured-product-card {
+    width: calc(95% / {{ section.settings.desktop_columns }});
+  }
+  #shopify-section-{{ section.id }} .custom-product-grid .products .featured-product-card img {
+    object-fit: {{ section.settings.image_fill_type }};
+    aspect-ratio: {{ section.settings.image_aspect_ratio }};
+  }
+  .custom-product-grid {
+    max-width: 100%;
+    width: {{ section.settings.container_width }}px;
+  }
+  @media only screen and (max-width: 768px) {
+    .featured-product-card {
+      width: calc(95% / {{ section.settings.mobile_columns }});
+    }
+  }
+{% endstyle %}
+<script>
+  function addToCart(productID, quantity, variantID, addToCartButton) {
+    addToCartButton.text('Adding');
+    $.ajax({
+      type: 'POST',
+      url: '/cart/add.js',
+      data: {
+        quantity: quantity,
+        id: variantID || productID,
+        properties: { 
+          "quick add": {{ section.settings.quick_add_enabled }} 
+        }
+      },
+      dataType: 'json',
+      success: function(data) {
+        addToCartButton.text('Added to cart');
+        setTimeout(function() {
+          addToCartButton.text('Add to cart');
+        }, 2000);
+      },
+      error: function(xhr, status, error) {
+        addToCartButton.text('Add to cart');
+      }
+    });
+  }
+  
+  $(document).on('click', '.add-to-cart-btn', function() {
+    var productId = $(this).data('product-id');
+    var quantity = $(this).data('quantity');
+    var variantId = $(this).data('variant-id');
+    var addToCartButton = $(this);
+    
+    addToCart(productId, quantity, variantId, addToCartButton);
+  });
+  
+  $(document).ready(function(){
+    $('.mobile-products').slick({
+      infinite: true,
+      slidesToShow: {{ section.settings.mobile_columns }},
+      slidesToScroll: 1,
+      arrows: false
+    });
+  });
+</script>
+{% assign quick_add_value = section.settings.quick_add_enabled %}
+<div class="custom-product-grid page-width">
+  <h2>{{ section.settings.section_title }}</h2>
+  <div class="products">
+    {% for product in section.settings.collection.products %}
+      {% render 'featured-card-product', card_product: product, quick_add_value: quick_add_value %}
+    {% endfor %}
+  </div>
+  <div class="mobile-products">
+    {% for product in section.settings.collection.products %}
+      {% render 'featured-card-product', card_product: product, quick_add_value: quick_add_value %}
+    {% endfor %}
+  </div>
+</div>
+{% schema %}
+{
+  "name": "Featured Products Custom",
+  "settings": [
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Section Title"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Featured collection"
+    },
+    {
+      "type": "checkbox",
+      "id": "quick_add_enabled",
+      "label": "Enable Quick Add",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "desktop_columns",
+      "label": "Number of Columns (Desktop)",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Number of Columns (Mobile)",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "select",
+      "id": "image_aspect_ratio",
+      "label": "Image Aspect Ratio",
+      "options": [
+        {
+          "value": "1/1",
+          "label": "1/1"
+        },
+        {
+          "value": "16/9",
+          "label": "16/9"
+        },
+        {
+          "value": "4/3",
+          "label": "4/3"
+        },
+        {
+          "value": "3/4",
+          "label": "3/4"
+        }
+      ],
+      "default": "1/1"
+    },
+    {
+      "type": "select",
+      "id": "image_fill_type",
+      "label": "Image Fill Type",
+      "options": [
+        { "value": "cover", "label": "Cover" },
+        { "value": "contain", "label": "Contain" }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "container_width",
+      "label": "Container Width",
+      "default": "1200"
+    }
+  ],
+  "presets": [
+    {
+      "category": "Products",
+      "name": "Featured Products Custom"
+    }
+  ]
+}
+{% endschema %}
